@@ -14,6 +14,8 @@ const {
 const connectDB = require("./database.js");
 const notFoundHandler = require("./middleware/notFoundHandler");
 const errorHandler = require("./middleware/errorHandler.js");
+//Router
+const usersRouter = require("./api/User/User.router.js");
 //init
 const PORT = process.env.PORT || 80000;
 dotenv.config();
@@ -30,6 +32,7 @@ passport.use("jwt", JwtStrategy);
 connectDB();
 
 // Routes
+app.use("/api/users", usersRouter);
 app.use("/media", express.static(path.join(__dirname, "media")));
 // Not Found Handling middleware
 
