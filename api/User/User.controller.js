@@ -62,7 +62,7 @@ exports.signup = async (req, res, next) => {
       return res.status(500).json({ message: "Error hashing password" });
     }
 
-    // const majorFound = await Major.findOne({ name: major });
+    const majorFound = await Major.findOne({ name: major });
 
     // Create new user
     const user = new User({
@@ -74,11 +74,11 @@ exports.signup = async (req, res, next) => {
     });
 
     await user.save();
-    // await Major.findByIdAndUpdate(
-    //   majorFound._id,
-    //   { $push: { users: user._id } },
-    //   { new: true }
-    // );
+    await Major.findByIdAndUpdate(
+      majorFound._id,
+      { $push: { users: user._id } },
+      { new: true }
+    );
     // Generate token for the new user
     const token = generateToken(user);
 
