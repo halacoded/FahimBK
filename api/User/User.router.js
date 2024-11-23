@@ -24,6 +24,11 @@ usersRouter.post(
 usersRouter.get("/", authenticate, getAllUsers);
 usersRouter.get("/me", authenticate, getMe);
 usersRouter.get("/:id", authenticate, getUserById);
-usersRouter.put("/:id", authenticate, updateUser);
+usersRouter.put(
+  "/:id",
+  upload.single("profileImage"),
+  authenticate,
+  updateUser
+);
 
 module.exports = usersRouter;

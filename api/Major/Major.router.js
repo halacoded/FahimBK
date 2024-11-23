@@ -9,7 +9,7 @@ const {
 } = require("./Major.controller");
 const passport = require("passport");
 const authenticate = passport.authenticate("jwt", { session: false });
-// Routes
+
 majorRouter.post("/", authenticate, createMajor);
 majorRouter.get("/", getMajors);
 majorRouter.get("/:id", getMajorById);

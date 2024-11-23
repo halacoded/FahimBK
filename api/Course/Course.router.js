@@ -1,4 +1,5 @@
 const express = require("express");
+const courseRouter = express.Router();
 const {
   createCourse,
   getCourses,
@@ -7,9 +8,7 @@ const {
   deleteCourse,
 } = require("./Course.controller");
 const passport = require("passport");
-
 const authenticate = passport.authenticate("jwt", { session: false });
-const courseRouter = express.Router();
 
 courseRouter.post("/", authenticate, createCourse);
 courseRouter.get("/", getCourses);

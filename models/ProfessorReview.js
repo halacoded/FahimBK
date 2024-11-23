@@ -13,13 +13,7 @@ const ProfessorReviewSchema = new Schema({
     },
   ],
   avgRating: { type: Number, default: 0 },
-  comments: [
-    {
-      user: { type: Schema.Types.ObjectId, ref: "User" },
-      text: String,
-      createdAt: { type: Date, default: Date.now },
-    },
-  ],
+  comments: [{ type: Schema.Types.ObjectId, ref: "Comment" }],
 });
 
 module.exports = mongoose.model("ProfessorReview", ProfessorReviewSchema);

@@ -62,7 +62,7 @@ exports.getMajorById = async (req, res) => {
       path: "courses",
       select: "name number type",
     });
-    // .populate("users professors");
+
     if (!major) {
       return res.status(404).json({ message: "Cannot find major" });
     }
@@ -104,6 +104,20 @@ exports.updateMajor = async (req, res) => {
       await Course.updateMany(
         { _id: { $in: req.body.courses } },
         { $addToSet: { major: major._id } }
+      );
+    }
+    // Add major reference to users
+    if (req.body.users) {
+      await User.updateMany(
+        { _id: { $in: req.body.users } },
+        { $addToSet: { major: major._id } }
+      );
+    }
+    // Add major reference to professors
+    if (req.body.professors) {
+      await ProfessorReview.updateMany(
+        { _id: { $in: req.body.professors } },
+        { $addToSet: { department: major._id } }
       );
     }
     res.status(200).json(updatedMajor);

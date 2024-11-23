@@ -18,6 +18,9 @@ const errorHandler = require("./middleware/errorHandler.js");
 const usersRouter = require("./api/User/User.router.js");
 const courseRouter = require("./api/Course/Course.router.js");
 const majorRouter = require("./api/Major/Major.router.js");
+const commentRouter = require("./api/Comment/Comment.router.js");
+const professorRouter = require("./api/Professor/Professor.router.js");
+const courseReviewRouter = require("./api/CourseReview/CourseReview.router.js");
 //init
 const PORT = process.env.PORT || 80000;
 dotenv.config();
@@ -37,6 +40,9 @@ connectDB();
 app.use("/api/users", usersRouter);
 app.use("/api/courses", courseRouter);
 app.use("/api/majors", majorRouter);
+app.use("/api/comments", commentRouter);
+app.use("/api/professors", professorRouter);
+app.use("/api/courseReview", courseReviewRouter);
 app.use("/media", express.static(path.join(__dirname, "media")));
 // Not Found Handling middleware
 

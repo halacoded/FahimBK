@@ -69,7 +69,7 @@ exports.signup = async (req, res, next) => {
       username,
       email,
       password: hashedPassword,
-      //   major: majorFound._id,
+      major: majorFound._id,
       profileImage: "",
     });
 
@@ -171,18 +171,16 @@ exports.getUserById = async (req, res, next) => {
 exports.updateUser = async (req, res, next) => {
   try {
     const userId = req.user._id;
-
     const { username, email, password, major, courseNumbers } = req.body;
 
     const user = await User.findById(userId);
-
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
     // Handle profile image upload
-    if (req.files && req.files.profileImage) {
-      user.profileImage = req.files.profileImage[0].path;
+    if (req.file && req.file.path) {
+      user.profileImage = req.file.path;
     }
 
     // Handle username update
@@ -212,7 +210,7 @@ exports.updateUser = async (req, res, next) => {
       user.password = hashedPassword;
     }
 
-    // Update major
+    // Handle major update
     if (major) {
       const majorFound = await Major.findOne({ name: major });
       if (majorFound) {

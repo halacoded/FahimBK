@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const { Schema, model } = mongoose;
 
 const CourseReviewSchema = new Schema({
-  course: { type: Schema.Types.ObjectId, ref: "Course" },
+  course: { type: Schema.Types.ObjectId, ref: "Course", required: true },
   professor: {
     type: Schema.Types.ObjectId,
     ref: "ProfessorReview",
@@ -15,13 +15,7 @@ const CourseReviewSchema = new Schema({
     },
   ],
   avgRating: { type: Number, default: 0 },
-  comments: [
-    {
-      user: { type: Schema.Types.ObjectId, ref: "User" },
-      text: String,
-      createdAt: { type: Date, default: Date.now },
-    },
-  ],
+  comments: [{ type: Schema.Types.ObjectId, ref: "Comment" }],
 });
 
 module.exports = mongoose.model("CourseReview", CourseReviewSchema);
