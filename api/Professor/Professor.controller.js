@@ -5,11 +5,12 @@ const Major = require("../../models/Major");
 const Comment = require("../../models/Comment");
 exports.createProfessor = async (req, res) => {
   try {
-    const { name, department, courses } = req.body;
+    const { name, title, department, courses } = req.body;
     const profileImage = req.file ? req.file.path : "";
 
     const newProfessor = new ProfessorReview({
       name,
+      title,
       profileImage,
       department,
       courses,
@@ -74,7 +75,7 @@ exports.getProfessorById = async (req, res) => {
 
 exports.updateProfessor = async (req, res) => {
   try {
-    const { name, department, courses } = req.body;
+    const { name, title, department, courses } = req.body;
     const profileImage = req.file ? req.file.path : "";
 
     const professor = await ProfessorReview.findById(req.params.id);
@@ -83,6 +84,7 @@ exports.updateProfessor = async (req, res) => {
     }
     const oldDepartment = professor.department;
     professor.name = name || professor.name;
+    professor.title = title || professor.title;
     professor.department = department || professor.department;
     professor.profileImage = profileImage || professor.profileImage;
     professor.courses = courses || professor.courses;
