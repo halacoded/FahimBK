@@ -264,3 +264,41 @@ exports.updateUser = async (req, res, next) => {
       .json({ message: "Error updating user", error: err.message });
   }
 };
+
+exports.addCourses = async (req, res, next) => {
+  try {
+    const userId = req.user._id;
+    const courseIds = req.body.courseIds;
+
+    if (!Array.isArray(courseIds)) {
+      return res.status(400).json({ message: "courseIds should be an array" });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    for (const courseId of courseIds) {
+      const course = await Course.findById(courseId);
+      if (!course) {
+        return res
+          .status(404)
+          .json({ message: `Course not found: ${courseId}` });
+      }
+      if (!user.courses.includes(courseId)) {
+        user.courses.push(courseId);
+        course.users.push(userId);
+      }
+    }
+    await user.save();
+    await Course.updateMany(
+      { _id: { $in: courseIds } },
+      { $addToSet: { users: userId } }
+    );
+
+    res.status(200).json({ message: "Courses added successfully", user });
+  } catch (err) {
+    console.log("Error:", err);
+    next(err);
+  }
+};
