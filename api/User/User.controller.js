@@ -302,3 +302,46 @@ exports.addCourses = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.removeCourses = async (req, res, next) => {
+  try {
+    const userId = req.user._id;
+    const courseIds = req.body.courseIds;
+
+    if (!Array.isArray(courseIds)) {
+      return res.status(400).json({ message: "courseIds should be an array" });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    for (const courseId of courseIds) {
+      const course = await Course.findById(courseId);
+      if (!course) {
+        return res
+          .status(404)
+          .json({ message: `Course not found: ${courseId}` });
+      }
+      if (!user.courses.includes(courseId)) {
+        return res.status(400).json({
+          message: `Course ID ${courseId} is not in the user's courses array`,
+        });
+      }
+    }
+
+    user.courses.pull(...courseIds);
+    await user.save();
+
+    await Course.updateMany(
+      { _id: { $in: courseIds } },
+      { $pull: { users: userId } }
+    );
+
+    res.status(200).json({ message: "Courses removed successfully", user });
+  } catch (err) {
+    console.log("Error:", err);
+    next(err);
+  }
+};
