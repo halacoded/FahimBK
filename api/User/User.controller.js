@@ -62,20 +62,20 @@ exports.signup = async (req, res, next) => {
       return res.status(500).json({ message: "Error hashing password" });
     }
 
-    const majorFound = await Major.findOne({ name: major });
+    const majorFound = await Major.find();
 
     // Create new user
     const user = new User({
       username,
       email,
       password: hashedPassword,
-      major: majorFound._id,
+      major,
       profileImage: "",
     });
 
     await user.save();
     await Major.findByIdAndUpdate(
-      majorFound._id,
+      majorFound,
       { $push: { users: user._id } },
       { new: true }
     );
@@ -139,7 +139,8 @@ exports.getMe = async (req, res, next) => {
           path: "department",
           select: "name",
         },
-      });
+      })
+      .populate("major", "name");
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });

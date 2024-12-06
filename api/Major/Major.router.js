@@ -6,6 +6,7 @@ const {
   createMajor,
   updateMajor,
   deleteMajor,
+  getMajorCourses,
 } = require("./Major.controller");
 const passport = require("passport");
 const authenticate = passport.authenticate("jwt", { session: false });
@@ -15,5 +16,5 @@ majorRouter.get("/", getMajors);
 majorRouter.get("/:id", getMajorById);
 majorRouter.put("/:id", authenticate, updateMajor);
 majorRouter.delete("/:id", authenticate, deleteMajor);
-
+majorRouter.get("/a/aaa", authenticate, getMajorCourses);
 module.exports = majorRouter;

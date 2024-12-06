@@ -154,3 +154,30 @@ exports.deleteMajor = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+exports.getMajorCourses = async (req, res, next) => {
+  try {
+    console.log("getMajorCourses function called");
+    const userId = req.user._id;
+
+    const user = await User.findById(userId).populate("major");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const majorId = user.major?._id;
+    if (!majorId) {
+      return res.status(404).json({ message: "Major not found for the user" });
+    }
+
+    const major = await Major.findById(majorId).populate("courses");
+    if (!major) {
+      return res.status(404).json({ message: "Major not found" });
+    }
+
+    res.status(200).json({ courses: major.courses });
+  } catch (err) {
+    console.log("Error:", err);
+    next(err);
+  }
+};
