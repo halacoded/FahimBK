@@ -36,9 +36,8 @@ exports.getCourses = async (req, res) => {
   try {
     const courses = await Course.find().populate([
       { path: "pre", select: "name number" },
+      { path: "Coreq", select: "name number" },
       { path: "major", select: "name" },
-      // { path: "users", select: "username" },
-      // { path: "courseReviews", select: "" },
     ]);
     res.status(200).json(courses);
   } catch (error) {
@@ -49,6 +48,7 @@ exports.getCourseById = async (req, res) => {
   try {
     const course = await Course.findById(req.params.id).populate([
       { path: "pre", select: "name number" },
+      { path: "Coreq", select: "name number" },
       { path: "major", select: "name" },
       // { path: "users", select: "username" },
       // { path: "courseReviews", select: "" },
