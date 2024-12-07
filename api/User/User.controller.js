@@ -279,6 +279,8 @@ exports.addCourses = async (req, res, next) => {
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
+
+    let creditAdded = 0;
     for (const courseId of courseIds) {
       const course = await Course.findById(courseId);
       if (!course) {
@@ -288,9 +290,12 @@ exports.addCourses = async (req, res, next) => {
       }
       if (!user.courses.includes(courseId)) {
         user.courses.push(courseId);
+        creditAdded += course.credit || 0; // Ensure credit is a valid number
         course.users.push(userId);
       }
     }
+
+    user.creditDone = (user.creditDone || 0) + creditAdded; // Initialize creditDone to 0 if undefined or null
     await user.save();
     await Course.updateMany(
       { _id: { $in: courseIds } },
@@ -318,6 +323,7 @@ exports.removeCourses = async (req, res, next) => {
       return res.status(404).json({ message: "User not found" });
     }
 
+    let creditRemoved = 0;
     for (const courseId of courseIds) {
       const course = await Course.findById(courseId);
       if (!course) {
@@ -330,9 +336,11 @@ exports.removeCourses = async (req, res, next) => {
           message: `Course ID ${courseId} is not in the user's courses array`,
         });
       }
+      creditRemoved += course.credit || 0; // Ensure credit is a valid number
     }
 
     user.courses.pull(...courseIds);
+    user.creditDone = (user.creditDone || 0) - creditRemoved; // Initialize creditDone to 0 if undefined or null
     await user.save();
 
     await Course.updateMany(
@@ -347,6 +355,126 @@ exports.removeCourses = async (req, res, next) => {
   }
 };
 
+// exports.getEligibleCourses = async (req, res) => {
+//   try {
+//     const user = await User.findById(req.user._id).populate("courses");
+//     if (!user) {
+//       return res.status(404).json({ message: "User not found" });
+//     }
+
+//     // Retrieve all courses with populated pre and Coreq fields
+//     const allCourses = await Course.find().populate([
+//       {
+//         path: "pre",
+//         model: "Course",
+//         select: "name number",
+//         populate: {
+//           path: "pre Coreq",
+//           model: "Course",
+//           select: "name number",
+//         },
+//       },
+//       {
+//         path: "Coreq",
+//         model: "Course",
+//         select: "name number",
+//         populate: {
+//           path: "pre Coreq",
+//           model: "Course",
+//           select: "name number",
+//         },
+//       },
+//     ]);
+
+//     // Filter eligible courses
+//     const eligibleCourses = allCourses.filter((course) => {
+//       // Check if user has already taken the course
+//       if (
+//         user.courses.some((takenCourse) => takenCourse._id.equals(course._id))
+//       ) {
+//         return false;
+//       }
+
+//       // Check prerequisites
+//       if (course.pre && course.pre.length > 0) {
+//         for (let preCourse of course.pre) {
+//           if (
+//             !user.courses.some((takenCourse) =>
+//               takenCourse._id.equals(preCourse._id)
+//             )
+//           ) {
+//             return false;
+//           }
+//         }
+//       }
+
+//       // Check co-requisites
+//       if (course.Coreq && course.Coreq.length > 0) {
+//         for (let coreqCourse of course.Coreq) {
+//           if (
+//             !user.courses.some((takenCourse) =>
+//               takenCourse._id.equals(coreqCourse._id)
+//             )
+//           ) {
+//             return false;
+//           }
+//         }
+//       }
+
+//       return true;
+//     });
+
+//     res.status(200).json(eligibleCourses);
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// };
+
+// Helper function to find all unique combinations of courses that sum up to a target credit value
+function findCourseCombinations(courses, target, start, result, results) {
+  if (target === 0) {
+    // Sort the combination by course ID to standardize the order
+    const combination = [...result].sort((a, b) =>
+      a._id.toString().localeCompare(b._id.toString())
+    );
+    const uniqueKey = combination
+      .map((course) => course._id.toString())
+      .join(",");
+    results.add(uniqueKey);
+    return;
+  }
+  for (let i = start; i < courses.length; i++) {
+    if (courses[i].credit <= target) {
+      result.push(courses[i]);
+      findCourseCombinations(
+        courses,
+        target - courses[i].credit,
+        i + 1,
+        result,
+        results
+      );
+      result.pop();
+    }
+  }
+}
+
+// Function to get all unique combinations
+function getAllUniqueCombinations(courses, targetCredits) {
+  const uniqueCombinations = [];
+  for (let target of targetCredits) {
+    const results = new Set();
+    findCourseCombinations(courses, target, 0, [], results);
+
+    // Convert unique keys back to course combinations
+    const courseCombos = Array.from(results).map((key) =>
+      key
+        .split(",")
+        .map((id) => courses.find((course) => course._id.toString() === id))
+    );
+    uniqueCombinations.push({ target, results: courseCombos });
+  }
+  return uniqueCombinations;
+}
 exports.getEligibleCourses = async (req, res) => {
   try {
     const user = await User.findById(req.user._id).populate("courses");
@@ -356,26 +484,8 @@ exports.getEligibleCourses = async (req, res) => {
 
     // Retrieve all courses with populated pre and Coreq fields
     const allCourses = await Course.find().populate([
-      {
-        path: "pre",
-        model: "Course",
-        select: "name number",
-        populate: {
-          path: "pre Coreq",
-          model: "Course",
-          select: "name number",
-        },
-      },
-      {
-        path: "Coreq",
-        model: "Course",
-        select: "name number",
-        populate: {
-          path: "pre Coreq",
-          model: "Course",
-          select: "name number",
-        },
-      },
+      { path: "pre", select: "name number" },
+      { path: "Coreq", select: "name number" },
     ]);
 
     // Filter eligible courses
@@ -416,7 +526,16 @@ exports.getEligibleCourses = async (req, res) => {
       return true;
     });
 
-    res.status(200).json(eligibleCourses);
+    // Define target credit values
+    const targetCredits = [9, 10, 11, 12, 13, 14, 15, 16, 17];
+
+    // Get all unique combinations
+    const uniqueCourseCombinations = getAllUniqueCombinations(
+      eligibleCourses,
+      targetCredits
+    );
+
+    res.status(200).json(uniqueCourseCombinations);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

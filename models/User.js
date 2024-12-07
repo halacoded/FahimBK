@@ -8,6 +8,7 @@ const UserSchema = new Schema({
   profileImage: { type: String, default: "" },
   major: { type: Schema.Types.ObjectId, ref: "Major" },
   courses: [{ type: Schema.Types.ObjectId, ref: "Course" }], // Courses user Already Took
+  creditDone: { type: Number },
   coursesReviewed: [{ type: Schema.Types.ObjectId, ref: "CourseReview" }],
   ProfessorsReviewed: [{ type: Schema.Types.ObjectId, ref: "ProfessorReview" }],
   comments: [{ type: Schema.Types.ObjectId, ref: "Comment" }],
