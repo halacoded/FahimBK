@@ -48,7 +48,7 @@ exports.getMajors = async (req, res) => {
     const majors = await Major.find()
       .populate({
         path: "courses",
-        select: "name number type",
+        select: "name number type pre  Coreq",
       })
       .populate("users professors");
     res.status(200).json(majors);

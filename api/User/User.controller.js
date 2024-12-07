@@ -346,3 +346,78 @@ exports.removeCourses = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.getEligibleCourses = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).populate("courses");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Retrieve all courses with populated pre and Coreq fields
+    const allCourses = await Course.find().populate([
+      {
+        path: "pre",
+        model: "Course",
+        select: "name number",
+        populate: {
+          path: "pre Coreq",
+          model: "Course",
+          select: "name number",
+        },
+      },
+      {
+        path: "Coreq",
+        model: "Course",
+        select: "name number",
+        populate: {
+          path: "pre Coreq",
+          model: "Course",
+          select: "name number",
+        },
+      },
+    ]);
+
+    // Filter eligible courses
+    const eligibleCourses = allCourses.filter((course) => {
+      // Check if user has already taken the course
+      if (
+        user.courses.some((takenCourse) => takenCourse._id.equals(course._id))
+      ) {
+        return false;
+      }
+
+      // Check prerequisites
+      if (course.pre && course.pre.length > 0) {
+        for (let preCourse of course.pre) {
+          if (
+            !user.courses.some((takenCourse) =>
+              takenCourse._id.equals(preCourse._id)
+            )
+          ) {
+            return false;
+          }
+        }
+      }
+
+      // Check co-requisites
+      if (course.Coreq && course.Coreq.length > 0) {
+        for (let coreqCourse of course.Coreq) {
+          if (
+            !user.courses.some((takenCourse) =>
+              takenCourse._id.equals(coreqCourse._id)
+            )
+          ) {
+            return false;
+          }
+        }
+      }
+
+      return true;
+    });
+
+    res.status(200).json(eligibleCourses);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
