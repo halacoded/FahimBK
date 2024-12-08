@@ -1,7 +1,3 @@
-No worries! Here's an updated README file that reflects the absence of a license and a simple contributing section:
-
----
-
 # Fahim Backend
 
 **Fahim** is a recommendation website designed specifically for students at Kuwait University’s College of Engineering and Petroleum. The backend supports functionalities for recommending courses, providing reviews from other students, and helping students choose the best professors.
