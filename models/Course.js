@@ -7,7 +7,8 @@ const CourseSchema = new Schema({
   pre: [{ type: Schema.Types.ObjectId, ref: "Course" }],
   Coreq: [{ type: Schema.Types.ObjectId, ref: "Course" }],
   reqCredit: { type: Number, default: 0 },
-  weight: { type: Number },
+  weight: { type: Number }, //Determine Difficulty of course
+  priority: { type: Number }, //Determine Importance of course
   type: { type: String, required: true }, //  "general_education_requirement", "core_requirement", etc.
   major: [{ type: Schema.Types.ObjectId, ref: "Major" }], //Course can be in one or more Major
   credit: { type: Number, required: true },

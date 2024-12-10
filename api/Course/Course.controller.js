@@ -5,7 +5,18 @@ const Major = require("../../models/Major");
 
 exports.createCourse = async (req, res) => {
   try {
-    const { name, number, pre, type, major, credit } = req.body;
+    const {
+      name,
+      number,
+      pre,
+      type,
+      major,
+      credit,
+      Coreq,
+      reqCredit,
+      weight,
+      priority,
+    } = req.body;
     const newCourse = new Course({
       name,
       number,
@@ -13,6 +24,10 @@ exports.createCourse = async (req, res) => {
       type,
       major,
       credit,
+      Coreq,
+      reqCredit,
+      weight,
+      priority,
     });
     await newCourse.save();
 
