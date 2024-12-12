@@ -290,12 +290,12 @@ exports.addCourses = async (req, res, next) => {
       }
       if (!user.courses.includes(courseId)) {
         user.courses.push(courseId);
-        creditAdded += course.credit || 0; // Ensure credit is a valid number
+        creditAdded += course.credit || 0;
         course.users.push(userId);
       }
     }
 
-    user.creditDone = (user.creditDone || 0) + creditAdded; // Initialize creditDone to 0 if undefined or null
+    user.creditDone = (user.creditDone || 0) + creditAdded;
     await user.save();
     await Course.updateMany(
       { _id: { $in: courseIds } },
@@ -355,126 +355,8 @@ exports.removeCourses = async (req, res, next) => {
   }
 };
 
-// exports.getEligibleCourses = async (req, res) => {
-//   try {
-//     const user = await User.findById(req.user._id).populate("courses");
-//     if (!user) {
-//       return res.status(404).json({ message: "User not found" });
-//     }
+/** * Note: This controller is under development and still needs work. */
 
-//     // Retrieve all courses with populated pre and Coreq fields
-//     const allCourses = await Course.find().populate([
-//       {
-//         path: "pre",
-//         model: "Course",
-//         select: "name number",
-//         populate: {
-//           path: "pre Coreq",
-//           model: "Course",
-//           select: "name number",
-//         },
-//       },
-//       {
-//         path: "Coreq",
-//         model: "Course",
-//         select: "name number",
-//         populate: {
-//           path: "pre Coreq",
-//           model: "Course",
-//           select: "name number",
-//         },
-//       },
-//     ]);
-
-//     // Filter eligible courses
-//     const eligibleCourses = allCourses.filter((course) => {
-//       // Check if user has already taken the course
-//       if (
-//         user.courses.some((takenCourse) => takenCourse._id.equals(course._id))
-//       ) {
-//         return false;
-//       }
-
-//       // Check prerequisites
-//       if (course.pre && course.pre.length > 0) {
-//         for (let preCourse of course.pre) {
-//           if (
-//             !user.courses.some((takenCourse) =>
-//               takenCourse._id.equals(preCourse._id)
-//             )
-//           ) {
-//             return false;
-//           }
-//         }
-//       }
-
-//       // Check co-requisites
-//       if (course.Coreq && course.Coreq.length > 0) {
-//         for (let coreqCourse of course.Coreq) {
-//           if (
-//             !user.courses.some((takenCourse) =>
-//               takenCourse._id.equals(coreqCourse._id)
-//             )
-//           ) {
-//             return false;
-//           }
-//         }
-//       }
-
-//       return true;
-//     });
-
-//     res.status(200).json(eligibleCourses);
-//   } catch (error) {
-//     res.status(500).json({ message: error.message });
-//   }
-// };
-
-// Helper function to find all unique combinations of courses that sum up to a target credit value
-function findCourseCombinations(courses, target, start, result, results) {
-  if (target === 0) {
-    // Sort the combination by course ID to standardize the order
-    const combination = [...result].sort((a, b) =>
-      a._id.toString().localeCompare(b._id.toString())
-    );
-    const uniqueKey = combination
-      .map((course) => course._id.toString())
-      .join(",");
-    results.add(uniqueKey);
-    return;
-  }
-  for (let i = start; i < courses.length; i++) {
-    if (courses[i].credit <= target) {
-      result.push(courses[i]);
-      findCourseCombinations(
-        courses,
-        target - courses[i].credit,
-        i + 1,
-        result,
-        results
-      );
-      result.pop();
-    }
-  }
-}
-
-// Function to get all unique combinations
-function getAllUniqueCombinations(courses, targetCredits) {
-  const uniqueCombinations = [];
-  for (let target of targetCredits) {
-    const results = new Set();
-    findCourseCombinations(courses, target, 0, [], results);
-
-    // Convert unique keys back to course combinations
-    const courseCombos = Array.from(results).map((key) =>
-      key
-        .split(",")
-        .map((id) => courses.find((course) => course._id.toString() === id))
-    );
-    uniqueCombinations.push({ target, results: courseCombos });
-  }
-  return uniqueCombinations;
-}
 exports.getEligibleCourses = async (req, res) => {
   try {
     const user = await User.findById(req.user._id).populate("courses");
@@ -484,8 +366,26 @@ exports.getEligibleCourses = async (req, res) => {
 
     // Retrieve all courses with populated pre and Coreq fields
     const allCourses = await Course.find().populate([
-      { path: "pre", select: "name number" },
-      { path: "Coreq", select: "name number" },
+      {
+        path: "pre",
+        model: "Course",
+        select: "name number",
+        populate: {
+          path: "pre Coreq",
+          model: "Course",
+          select: "name number",
+        },
+      },
+      {
+        path: "Coreq",
+        model: "Course",
+        select: "name number",
+        populate: {
+          path: "pre Coreq",
+          model: "Course",
+          select: "name number",
+        },
+      },
     ]);
 
     // Filter eligible courses
@@ -510,12 +410,58 @@ exports.getEligibleCourses = async (req, res) => {
         }
       }
 
-      // Check co-requisites
-      if (course.Coreq && course.Coreq.length > 0) {
-        for (let coreqCourse of course.Coreq) {
+      return true;
+    });
+
+    res.status(200).json(eligibleCourses);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.recommendCourses = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).populate("courses");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const allCourses = await Course.find().populate([
+      {
+        path: "pre",
+        model: "Course",
+        select: "name number",
+        populate: {
+          path: "pre Coreq",
+          model: "Course",
+          select: "name number",
+        },
+      },
+      {
+        path: "Coreq",
+        model: "Course",
+        select: "name number",
+        populate: {
+          path: "pre Coreq",
+          model: "Course",
+          select: "name number",
+        },
+      },
+    ]);
+
+    // Filter eligible courses
+    const eligibleCourses = allCourses.filter((course) => {
+      if (
+        user.courses.some((takenCourse) => takenCourse._id.equals(course._id))
+      ) {
+        return false;
+      }
+
+      if (course.pre && course.pre.length > 0) {
+        for (let preCourse of course.pre) {
           if (
             !user.courses.some((takenCourse) =>
-              takenCourse._id.equals(coreqCourse._id)
+              takenCourse._id.equals(preCourse._id)
             )
           ) {
             return false;
@@ -526,17 +472,176 @@ exports.getEligibleCourses = async (req, res) => {
       return true;
     });
 
-    // Define target credit values
-    const targetCredits = [9, 10, 11, 12, 13, 14, 15, 16, 17];
+    //higher priority first then lower weight first
+    const sortedCourses = eligibleCourses.sort((a, b) => {
+      if (a.priority === b.priority) {
+        return a.weight - b.weight;
+      }
+      return b.priority - a.priority;
+    });
 
-    // Get all unique combinations
-    const uniqueCourseCombinations = getAllUniqueCombinations(
-      eligibleCourses,
-      targetCredits
+    const recommendedCourses = [];
+    const seenCourses = new Set();
+
+    sortedCourses.forEach((course) => {
+      if (!seenCourses.has(course._id.toString())) {
+        recommendedCourses.push(course);
+        seenCourses.add(course._id.toString());
+
+        // Include corequisites
+        if (course.Coreq && course.Coreq.length > 0) {
+          course.Coreq.forEach((coreq) => {
+            if (!seenCourses.has(coreq._id.toString())) {
+              recommendedCourses.push(coreq);
+              seenCourses.add(coreq._id.toString());
+            }
+          });
+        }
+      }
+    });
+
+    res.json(recommendedCourses);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "An error occurred" });
+  }
+};
+
+exports.recommendTopCombinations = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).populate("courses");
+    const creditLimit = parseInt(req.body.creditLimit, 10);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (isNaN(creditLimit) || creditLimit < 9 || creditLimit > 17) {
+      return res.status(400).json({
+        message:
+          "Invalid credit limit. Please choose a limit between 9 and 17 credits.",
+      });
+    }
+
+    const allCourses = await Course.find().populate([
+      {
+        path: "pre",
+        model: "Course",
+        select: "name number",
+        populate: {
+          path: "pre Coreq",
+          model: "Course",
+          select: "name number",
+        },
+      },
+      {
+        path: "Coreq",
+        model: "Course",
+        select: "name number",
+        populate: {
+          path: "pre Coreq",
+          model: "Course",
+          select: "name number",
+        },
+      },
+    ]);
+
+    const eligibleCourses = allCourses.filter((course) => {
+      if (
+        user.courses.some((takenCourse) => takenCourse._id.equals(course._id))
+      ) {
+        return false;
+      }
+
+      if (course.pre && course.pre.length > 0) {
+        for (let preCourse of course.pre) {
+          if (
+            !user.courses.some((takenCourse) =>
+              takenCourse._id.equals(preCourse._id)
+            )
+          ) {
+            return false;
+          }
+        }
+      }
+
+      return true;
+    });
+
+    //higher priority first then lower weight first
+    const sortedCourses = eligibleCourses.sort((a, b) => {
+      if (a.priority === b.priority) {
+        return a.weight - b.weight;
+      }
+      return b.priority - a.priority;
+    });
+
+    const getCombinations = (courses, creditLimit) => {
+      const result = [];
+
+      const findCombination = (index, currentCombination, currentCredits) => {
+        if (currentCredits >= creditLimit) {
+          for (let course of currentCombination) {
+            if (course.Coreq && course.Coreq.length > 0) {
+              for (let coreq of course.Coreq) {
+                if (!currentCombination.some((c) => c._id.equals(coreq._id))) {
+                  return;
+                }
+              }
+            }
+          }
+          result.push([...currentCombination]);
+          return;
+        }
+
+        for (let i = index; i < courses.length; i++) {
+          const course = courses[i];
+          if (!currentCombination.includes(course)) {
+            const newCredits = currentCredits + course.credit;
+            if (newCredits <= creditLimit) {
+              findCombination(
+                i + 1,
+                [...currentCombination, course],
+                newCredits
+              );
+            }
+          }
+        }
+      };
+
+      findCombination(0, [], 0);
+      return result;
+    };
+
+    const recommendedCombinations = getCombinations(sortedCourses, creditLimit);
+
+    // Sort combinations by total priority and weight
+    const sortedCombinations = recommendedCombinations.sort((a, b) => {
+      const totalPriorityA = a.reduce(
+        (acc, course) => acc + course.priority,
+        0
+      );
+      const totalPriorityB = b.reduce(
+        (acc, course) => acc + course.priority,
+        0
+      );
+      const totalWeightA = a.reduce((acc, course) => acc + course.weight, 0);
+      const totalWeightB = b.reduce((acc, course) => acc + course.weight, 0);
+
+      if (totalPriorityA === totalPriorityB) {
+        return totalWeightA - totalWeightB;
+      }
+      return totalPriorityB - totalPriorityA;
+    });
+
+    const topCombinations = sortedCombinations.slice(0, 5);
+
+    const combinationNames = topCombinations.map((combination) =>
+      combination.map((course) => course.name)
     );
 
-    res.status(200).json(uniqueCourseCombinations);
+    res.json(combinationNames);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error(error);
+    res.status(500).json({ message: "An error occurred" });
   }
 };

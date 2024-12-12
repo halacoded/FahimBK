@@ -10,6 +10,8 @@ const {
   addCourses,
   removeCourses,
   getEligibleCourses,
+  recommendCourses,
+  recommendTopCombinations,
 } = require("./User.controller");
 const passport = require("passport");
 const upload = require("../../middleware/multer");
@@ -36,4 +38,9 @@ usersRouter.put(
 usersRouter.post("/addcourses", authenticate, addCourses);
 usersRouter.post("/removeCourses", authenticate, removeCourses);
 usersRouter.get("/eligible/courses", authenticate, getEligibleCourses);
+usersRouter.get(
+  "/recommendation/courses",
+  authenticate,
+  recommendTopCombinations
+);
 module.exports = usersRouter;
