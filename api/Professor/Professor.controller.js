@@ -41,7 +41,10 @@ exports.createProfessor = async (req, res) => {
 exports.getProfessors = async (req, res) => {
   try {
     const professors = await ProfessorReview.find()
-      .populate("courses")
+      .populate({
+        path: "courses",
+        populate: { path: "course", select: "name" },
+      })
       .populate("comments")
       .populate("department");
 
@@ -57,7 +60,10 @@ exports.getProfessors = async (req, res) => {
 exports.getProfessorById = async (req, res) => {
   try {
     const professor = await ProfessorReview.findById(req.params.id)
-      .populate("courses")
+      .populate({
+        path: "courses",
+        populate: { path: "course", select: "name" },
+      })
       .populate("department")
       .populate("comments.user", "name");
 
