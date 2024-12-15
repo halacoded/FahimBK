@@ -202,9 +202,11 @@ exports.addCourseRating = async (req, res, next) => {
     courseReview.avgRating = averageCourseRating;
     await courseReview.save();
 
-    const professor = courseReview.professor;
+    const professor = await ProfessorReview.findById(
+      courseReview.professor._id
+    );
 
-    // Update professor's ratings similarly
+    // Update professor's ratings
     const existingProfessorRating = professor.ratings.find(
       (r) => r.user.toString() === userId.toString()
     );
@@ -227,6 +229,7 @@ exports.addCourseRating = async (req, res, next) => {
 
     await professor.save();
 
+    // Calculate the new average rating for the professor
     const sumProfessor = professor.ratings.reduce(
       (acc, r) =>
         acc +
@@ -244,10 +247,7 @@ exports.addCourseRating = async (req, res, next) => {
     professor.avgRating = averageProfessorRating;
     await professor.save();
 
-    res.status(200).json({
-      courseAverageRating: courseReview.avgRating,
-      professorAverageRating: professor.avgRating,
-    });
+    res.status(200).json({ averageRating: courseReview.avgRating });
   } catch (error) {
     next(error);
   }
