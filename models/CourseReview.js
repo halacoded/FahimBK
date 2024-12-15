@@ -11,7 +11,11 @@ const CourseReviewSchema = new Schema({
   ratings: [
     {
       user: { type: Schema.Types.ObjectId, ref: "User" },
-      rating: { type: Number, required: true, min: 1, max: 5 },
+      teachingQuality: { type: Number, required: true, min: 1, max: 5 },
+      flexibility: { type: Number, required: true, min: 1, max: 5 },
+      examsHomework: { type: Number, required: true, min: 1, max: 5 },
+      classEnjoyment: { type: Number, required: true, min: 1, max: 5 },
+      recommendation: { type: Number, required: true, min: 1, max: 5 },
     },
   ],
   avgRating: { type: Number, default: 0 },

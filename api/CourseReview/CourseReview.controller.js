@@ -147,7 +147,13 @@ exports.deleteCourseReview = async (req, res, next) => {
 exports.addCourseRating = async (req, res, next) => {
   try {
     const { courseReviewId } = req.params;
-    const { rating } = req.body;
+    const {
+      teachingQuality,
+      flexibility,
+      examsHomework,
+      classEnjoyment,
+      recommendation,
+    } = req.body;
     const userId = req.user._id;
 
     const courseReview = await CourseReview.findById(courseReviewId);
@@ -159,16 +165,37 @@ exports.addCourseRating = async (req, res, next) => {
       (r) => r.user.toString() === userId.toString()
     );
     if (existingRating) {
-      existingRating.rating = rating;
+      existingRating.teachingQuality = teachingQuality;
+      existingRating.flexibility = flexibility;
+      existingRating.examsHomework = examsHomework;
+      existingRating.classEnjoyment = classEnjoyment;
+      existingRating.recommendation = recommendation;
     } else {
-      courseReview.ratings.push({ user: userId, rating });
+      courseReview.ratings.push({
+        user: userId,
+        teachingQuality,
+        flexibility,
+        examsHomework,
+        classEnjoyment,
+        recommendation,
+      });
     }
 
     await courseReview.save();
 
-    const sum = courseReview.ratings.reduce((acc, r) => acc + r.rating, 0);
-    courseReview.avgRating = (sum / courseReview.ratings.length).toFixed(1);
+    const sum = courseReview.ratings.reduce(
+      (acc, r) =>
+        acc +
+        r.teachingQuality +
+        r.flexibility +
+        r.examsHomework +
+        r.classEnjoyment +
+        r.recommendation,
+      0
+    );
+    const averageRating = (sum / (courseReview.ratings.length * 5)).toFixed(1);
 
+    courseReview.avgRating = averageRating;
     await courseReview.save();
 
     res.status(200).json({ averageRating: courseReview.avgRating });
