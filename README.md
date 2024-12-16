@@ -10,7 +10,7 @@
 4. [Usage](#usage)
 5. [Technologies Used](#technologies-used)
 6. [Contributing](#contributing)
-7. [Frontend Repository](#frontend-repository)
+7. [Frontend and Data Repositories](#frontend-repository)
 8. [Website](#website)
 
 ## Introduction
@@ -73,9 +73,9 @@ We welcome contributions! Feel free to fork the repository and submit pull reque
 
 The frontend and data for the Fahim project can be found in these repositories:
 
-Frontend Repository [Frontend Repository Link](https://github.com/Gaurav-Janjvadiya/Fahim-Client)]
+Frontend Repository [Frontend Repository Link](https://github.com/Gaurav-Janjvadiya/Fahim-Client)
 
-Data Repository [Frontend Repository Link](https://github.com/Gaurav-Janjvadiya/Fahim-Client)]
+Data Repository [Data Repository Link](https://github.com/Gaurav-Janjvadiya/Fahim-Client)
 
 ## Website
 
