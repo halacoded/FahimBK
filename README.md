@@ -69,10 +69,13 @@ After setting up, the backend server should be running on `http://localhost:8000
 
 We welcome contributions! Feel free to fork the repository and submit pull requests. For major changes, please open an issue first to discuss what you would like to change.
 
-## Frontend Repository
+## Frontend and Data Repositories
 
-The frontend for the Fahim project can be found in this repository:
-[Frontend Repository Link](https://github.com/Gaurav-Janjvadiya/Fahim-Client)
+The frontend and data for the Fahim project can be found in these repositories:
+
+Frontend Repository [Frontend Repository Link](https://github.com/Gaurav-Janjvadiya/Fahim-Client)]
+
+Data Repository [Frontend Repository Link](https://github.com/Gaurav-Janjvadiya/Fahim-Client)]
 
 ## Website
 
