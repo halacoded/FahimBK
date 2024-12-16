@@ -64,12 +64,24 @@ exports.getComments = async (req, res, next) => {
     }
 
     const comments = await Comment.find(filter)
-      .sort("-createdAt")
-      .populate("user", "username profileImage")
-      .populate({
-        path: "replies",
-        populate: { path: "user", select: "username profileImage" },
-      });
+    .sort("-createdAt")
+    .populate("user", "username profileImage") // Populate the user of the top-level comment
+    .populate({
+      path: "replies",
+      populate: [
+        {
+          path: "user", // Populate the user of the first-level replies
+          select: "username profileImage",
+        },
+        {
+          path: "replies", // Populate the second-level replies
+          populate: {
+            path: "user", // Populate the user of the second-level replies
+            select: "username profileImage",
+          },
+        },
+      ],
+    });  
 
     res.status(200).json(comments);
   } catch (error) {
