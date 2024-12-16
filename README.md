@@ -10,7 +10,7 @@
 4. [Usage](#usage)
 5. [Technologies Used](#technologies-used)
 6. [Contributing](#contributing)
-7. [Frontend and Data Repositories](#frontend-repository)
+7. [Frontend and Data Repositories](#Frontend-and-Data-Repositories)
 8. [Website](#website)
 
 ## Introduction
