@@ -147,10 +147,18 @@ exports.deleteCourseReview = async (req, res, next) => {
 exports.addCourseRating = async (req, res, next) => {
   try {
     const { courseReviewId } = req.params;
-    const { rating } = req.body;
+    const {
+      teachingQuality,
+      flexibility,
+      examsHomework,
+      classEnjoyment,
+      recommendation,
+    } = req.body;
     const userId = req.user._id;
 
-    const courseReview = await CourseReview.findById(courseReviewId);
+    const courseReview = await CourseReview.findById(courseReviewId).populate(
+      "professor"
+    );
     if (!courseReview) {
       return res.status(404).json({ message: "Course review not found" });
     }
@@ -159,17 +167,85 @@ exports.addCourseRating = async (req, res, next) => {
       (r) => r.user.toString() === userId.toString()
     );
     if (existingRating) {
-      existingRating.rating = rating;
+      existingRating.teachingQuality = teachingQuality;
+      existingRating.flexibility = flexibility;
+      existingRating.examsHomework = examsHomework;
+      existingRating.classEnjoyment = classEnjoyment;
+      existingRating.recommendation = recommendation;
     } else {
-      courseReview.ratings.push({ user: userId, rating });
+      courseReview.ratings.push({
+        user: userId,
+        teachingQuality,
+        flexibility,
+        examsHomework,
+        classEnjoyment,
+        recommendation,
+      });
     }
 
     await courseReview.save();
 
-    const sum = courseReview.ratings.reduce((acc, r) => acc + r.rating, 0);
-    courseReview.avgRating = (sum / courseReview.ratings.length).toFixed(1);
-
+    const sumCourse = courseReview.ratings.reduce(
+      (acc, r) =>
+        acc +
+        r.teachingQuality +
+        r.flexibility +
+        r.examsHomework +
+        r.classEnjoyment +
+        r.recommendation,
+      0
+    );
+    const averageCourseRating = (
+      sumCourse /
+      (courseReview.ratings.length * 5)
+    ).toFixed(1);
+    courseReview.avgRating = averageCourseRating;
     await courseReview.save();
+
+    const professor = await ProfessorReview.findById(
+      courseReview.professor._id
+    );
+
+    // Update professor's ratings
+    const existingProfessorRating = professor.ratings.find(
+      (r) => r.user.toString() === userId.toString()
+    );
+    if (existingProfessorRating) {
+      existingProfessorRating.teachingQuality = teachingQuality;
+      existingProfessorRating.flexibility = flexibility;
+      existingProfessorRating.examsHomework = examsHomework;
+      existingProfessorRating.classEnjoyment = classEnjoyment;
+      existingProfessorRating.recommendation = recommendation;
+    } else {
+      professor.ratings.push({
+        user: userId,
+        teachingQuality,
+        flexibility,
+        examsHomework,
+        classEnjoyment,
+        recommendation,
+      });
+    }
+
+    await professor.save();
+
+    // Calculate the new average rating for the professor
+    const sumProfessor = professor.ratings.reduce(
+      (acc, r) =>
+        acc +
+        r.teachingQuality +
+        r.flexibility +
+        r.examsHomework +
+        r.classEnjoyment +
+        r.recommendation,
+      0
+    );
+    const averageProfessorRating = (
+      sumProfessor /
+      (professor.ratings.length * 5)
+    ).toFixed(1);
+    professor.avgRating = averageProfessorRating;
+    await professor.save();
 
     res.status(200).json({ averageRating: courseReview.avgRating });
   } catch (error) {

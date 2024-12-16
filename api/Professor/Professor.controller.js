@@ -41,7 +41,10 @@ exports.createProfessor = async (req, res) => {
 exports.getProfessors = async (req, res) => {
   try {
     const professors = await ProfessorReview.find()
-      .populate("courses")
+      .populate({
+        path: "courses",
+        populate: { path: "course", select: "name" },
+      })
       .populate("comments")
       .populate("department");
 
@@ -57,7 +60,10 @@ exports.getProfessors = async (req, res) => {
 exports.getProfessorById = async (req, res) => {
   try {
     const professor = await ProfessorReview.findById(req.params.id)
-      .populate("courses")
+      .populate({
+        path: "courses",
+        populate: { path: "course", select: "name" },
+      })
       .populate("department")
       .populate("comments.user", "name");
 
@@ -147,7 +153,13 @@ exports.deleteProfessor = async (req, res) => {
 exports.addProfessorRating = async (req, res, next) => {
   try {
     const { professorId } = req.params;
-    const { rating } = req.body;
+    const {
+      teachingQuality,
+      flexibility,
+      examsHomework,
+      classEnjoyment,
+      recommendation,
+    } = req.body;
     const userId = req.user._id;
 
     const professor = await ProfessorReview.findById(professorId);
@@ -159,15 +171,35 @@ exports.addProfessorRating = async (req, res, next) => {
       (r) => r.user.toString() === userId.toString()
     );
     if (existingRating) {
-      existingRating.rating = rating;
+      existingRating.teachingQuality = teachingQuality;
+      existingRating.flexibility = flexibility;
+      existingRating.examsHomework = examsHomework;
+      existingRating.classEnjoyment = classEnjoyment;
+      existingRating.recommendation = recommendation;
     } else {
-      professor.ratings.push({ user: userId, rating });
+      professor.ratings.push({
+        user: userId,
+        teachingQuality,
+        flexibility,
+        examsHomework,
+        classEnjoyment,
+        recommendation,
+      });
     }
 
     await professor.save();
 
-    const sum = professor.ratings.reduce((acc, r) => acc + r.rating, 0);
-    const averageRating = (sum / professor.ratings.length).toFixed(1);
+    const sum = professor.ratings.reduce(
+      (acc, r) =>
+        acc +
+        r.teachingQuality +
+        r.flexibility +
+        r.examsHomework +
+        r.classEnjoyment +
+        r.recommendation,
+      0
+    );
+    const averageRating = (sum / (professor.ratings.length * 5)).toFixed(1);
 
     professor.avgRating = averageRating;
     await professor.save();
