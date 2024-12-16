@@ -18,6 +18,11 @@ const ProfessorReviewSchema = new Schema({
     },
   ],
   avgRating: { type: Number, default: 0 },
+  avgTeachingQuality: { type: Number, default: 0 },
+  avgFlexibility: { type: Number, default: 0 },
+  avgExamsHomework: { type: Number, default: 0 },
+  avgClassEnjoyment: { type: Number, default: 0 },
+  avgRecommendation: { type: Number, default: 0 },
   comments: [{ type: Schema.Types.ObjectId, ref: "Comment" }],
 });
 

@@ -200,11 +200,63 @@ exports.addProfessorRating = async (req, res, next) => {
       0
     );
     const averageRating = (sum / (professor.ratings.length * 5)).toFixed(1);
-
     professor.avgRating = averageRating;
+
+    const totalTeachingQuality = professor.ratings.reduce(
+      (acc, r) => acc + r.teachingQuality,
+      0
+    );
+    const averageTeachingQuality = (
+      totalTeachingQuality / professor.ratings.length
+    ).toFixed(1);
+    professor.avgTeachingQuality = averageTeachingQuality;
+
+    const totalFlexibility = professor.ratings.reduce(
+      (acc, r) => acc + r.flexibility,
+      0
+    );
+    const averageFlexibility = (
+      totalFlexibility / professor.ratings.length
+    ).toFixed(1);
+    professor.avgFlexibility = averageFlexibility;
+
+    const totalExamsHomework = professor.ratings.reduce(
+      (acc, r) => acc + r.examsHomework,
+      0
+    );
+    const averageExamsHomework = (
+      totalExamsHomework / professor.ratings.length
+    ).toFixed(1);
+    professor.avgExamsHomework = averageExamsHomework;
+
+    const totalClassEnjoyment = professor.ratings.reduce(
+      (acc, r) => acc + r.classEnjoyment,
+      0
+    );
+    const averageClassEnjoyment = (
+      totalClassEnjoyment / professor.ratings.length
+    ).toFixed(1);
+    professor.avgClassEnjoyment = averageClassEnjoyment;
+
+    const totalRecommendation = professor.ratings.reduce(
+      (acc, r) => acc + r.recommendation,
+      0
+    );
+    const averageRecommendation = (
+      totalRecommendation / professor.ratings.length
+    ).toFixed(1);
+    professor.avgRecommendation = averageRecommendation;
+
     await professor.save();
 
-    res.status(200).json({ averageRating });
+    res.status(200).json({
+      averageRating,
+      averageTeachingQuality,
+      averageFlexibility,
+      averageExamsHomework,
+      averageClassEnjoyment,
+      averageRecommendation,
+    });
   } catch (error) {
     next(error);
   }
