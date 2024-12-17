@@ -75,7 +75,7 @@ The frontend and data for the Fahim project can be found in these repositories:
 
 Frontend Repository [Frontend Repository Link](https://github.com/Gaurav-Janjvadiya/Fahim-Client)
 
-Data Repository [Data Repository Link](https://github.com/Gaurav-Janjvadiya/Fahim-Client)
+Data Repository [Data Repository Link](https://github.com/Ash33mb/Computer-Engineering-Data.git)
 
 ## Website
 
