@@ -510,7 +510,7 @@ exports.recommendCourses = async (req, res) => {
 exports.recommendTopCombinations = async (req, res) => {
   try {
     const user = await User.findById(req.user._id).populate("courses");
-    const creditLimit = parseInt(req.body.creditLimit, 10);
+    const creditLimit = parseInt(req.params.creditLimit, 10);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
