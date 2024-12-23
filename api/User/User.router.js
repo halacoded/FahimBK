@@ -39,7 +39,7 @@ usersRouter.post("/addcourses", authenticate, addCourses);
 usersRouter.post("/removeCourses", authenticate, removeCourses);
 usersRouter.get("/eligible/courses", authenticate, getEligibleCourses);
 usersRouter.get(
-  "/recommendation/courses",
+  "/recommendation/courses/:creditLimit",
   authenticate,
   recommendTopCombinations
 );
